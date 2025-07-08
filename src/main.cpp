@@ -2,6 +2,7 @@
 #include <iostream>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <unistd.h>
 #include "messaging.h"
 
 int main(int argc, char** argv) {
@@ -40,13 +41,6 @@ int main(int argc, char** argv) {
         // Close connection and cleanup all resources (endpoint, listener, worker, context).
         demo->cleanup();
 
-        // Try to initialize all UCX resources again after they've been cleaned up.
-        if (auto status = demo->run(Base::Mode::Server, socket_address); status != UCS_OK) {
-            ucs_error("Second run failed with error %s", ucs_status_string(status));
-        }
-
-        // Close connection and cleanup all resources (endpoint, listener, worker, context).
-        demo->cleanup();
     } else if (strcmp(argv[1], "client") == 0) {
         // Client connects with server, then sleeps 1 second. During this time
         // (specifically before the client closes its connection) the server closes

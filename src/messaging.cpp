@@ -1,4 +1,5 @@
 #include "messaging.h"
+#include <string>
 
 ucp_request_param_t request_parameters {};
 
