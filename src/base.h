@@ -1,6 +1,7 @@
 #ifndef OPENUCX_EXAMPLES_BASE_H
 #define OPENUCX_EXAMPLES_BASE_H
 
+#include <cuda_runtime.h>
 #include <atomic>
 #include <arpa/inet.h>
 #include <netinet/in.h>
