@@ -33,17 +33,17 @@ ucs_status_t Messaging::on_client_ready() {
 ucs_status_t Messaging::on_server_ready() {
   const int msg_len = 32;
   char *msg_device = nullptr, msg_host[msg_len] = "";
-  CHECK_CUDA(cudaMalloc((void **)&msg_device, sizeof(char) * msg_len));
+  CHECK_CUDA(cudaMallocManaged((void **)&msg_device, sizeof(char) * msg_len));
   auto request =
-      ucp_tag_recv_nbx(worker, msg_host, msg_len, 0, 0, &request_parameters);
+      ucp_tag_recv_nbx(worker, msg_device, msg_len, 0, 0, &request_parameters);
 
   if (auto status = wait_on_request(request); status != UCS_OK) {
     ucs_error("Receiving message failed");
     return status;
   }
 
-  // CHECK_CUDA(cudaMemcpy((void *)msg_host, (void *)msg_device,
-  //                       sizeof(char) * msg_len, cudaMemcpyDeviceToHost));
+  CHECK_CUDA(cudaMemcpy((void *)msg_host, (void *)msg_device,
+                        sizeof(char) * msg_len, cudaMemcpyDeviceToHost));
   CHECK_CUDA(cudaFree(msg_device));
   ucs_info("Received %s", msg_host);
   return UCS_OK;
