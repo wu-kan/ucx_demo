@@ -22,7 +22,7 @@ add_test(
         NAME ${PROJECT_NAME}
         COMMAND
         sh -c
-        "echo '.PHONY: all server client' > Makefile; echo 'all: server client' >> Makefile; echo 'server:' >> Makefile; echo '\t$<TARGET_FILE:${PROJECT_NAME}> server 54321' >> Makefile; echo 'client:' >> Makefile; echo '\tsleep 5'; echo '\t$<TARGET_FILE:${PROJECT_NAME}> client 54321' >> Makefile; make -j 2"
+        "echo '.PHONY: all server client' > Makefile; echo 'all: server client' >> Makefile; echo 'server:' >> Makefile; echo '\t$<TARGET_FILE:${PROJECT_NAME}> server 51515' >> Makefile; echo 'client:' >> Makefile; echo '\tsleep 0.5'; echo '\t$<TARGET_FILE:${PROJECT_NAME}> client 51515' >> Makefile; make -j 2"
         WORKING_DIRECTORY "Testing"
 )
 
