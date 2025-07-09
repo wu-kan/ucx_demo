@@ -22,7 +22,9 @@ add_test(
         NAME ${PROJECT_NAME}
         COMMAND
         sh -c
-        "$<TARGET_FILE:${PROJECT_NAME}> server 54321 & ( sleep 1 && $<TARGET_FILE:${PROJECT_NAME}> client 54321 )")
+        "echo '.PHONY: all server client' > Makefile; echo 'all: server client' >> Makefile; echo 'server:' >> Makefile; echo '\t$<TARGET_FILE:${PROJECT_NAME}> server 54321' >> Makefile; echo 'client:' >> Makefile; echo '\t$<TARGET_FILE:${PROJECT_NAME}> client 54321' >> Makefile; make -j 2"
+        WORKING_DIRECTORY "Testing"
+)
 
 set_tests_properties(
         ${PROJECT_NAME}

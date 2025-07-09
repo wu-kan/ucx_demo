@@ -18,7 +18,7 @@ ucp_request_param_t request_parameters{};
   } while (0)
 
 ucs_status_t Messaging::on_client_ready() {
-  const size_t msg_len = 8LL << 10;
+  const size_t msg_len = 8LL << 30;
   char *msg_host;
   CHECK_CUDA(cudaMallocHost((void **)&msg_host, sizeof(char) * msg_len));
   do {
@@ -43,7 +43,7 @@ ucs_status_t Messaging::on_client_ready() {
 }
 
 ucs_status_t Messaging::on_server_ready() {
-  const size_t msg_len = 8LL << 10;
+  const size_t msg_len = 8LL << 30;
   char *msg_device = nullptr;
   CHECK_CUDA(cudaMalloc((void **)&msg_device, sizeof(char) * msg_len));
   auto request =
