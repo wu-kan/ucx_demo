@@ -1,21 +1,8 @@
 #include "messaging.h"
+#include <cstring>
 #include <string>
 
 ucp_request_param_t request_parameters{};
-
-ucs_status_t Messaging::on_client_ready() {
-  std::string message = "Hello UCX";
-  auto request = ucp_tag_send_nbx(endpoint, message.c_str(), message.size() + 1,
-                                  0, &request_parameters);
-
-  if (auto status = wait_on_request(request); status != UCS_OK) {
-    ucs_error("Sending message failed");
-    return status;
-  }
-
-  ucs_info("Message sent");
-  return UCS_OK;
-}
 
 #define CHECK_CUDA(call)                                                       \
   do {                                                                         \
@@ -30,21 +17,49 @@ ucs_status_t Messaging::on_client_ready() {
     }                                                                          \
   } while (0)
 
+ucs_status_t Messaging::on_client_ready() {
+  const size_t msg_len = 8LL << 10;
+  char *msg_host;
+  CHECK_CUDA(cudaMallocHost((void **)&msg_host, sizeof(char) * msg_len));
+  do {
+    std::string message = "Hello UCX on CUDA";
+    std::memcpy(msg_host, message.c_str(), sizeof(char) * (message.size() + 1));
+  } while (0);
+  auto request =
+      ucp_tag_send_nbx(endpoint, msg_host, msg_len, 0, &request_parameters);
+
+  if (auto status = wait_on_request(request); status != UCS_OK) {
+
+    CHECK_CUDA(cudaFreeHost(msg_host));
+
+    ucs_error("Sending message failed");
+    return status;
+  }
+
+  CHECK_CUDA(cudaFreeHost(msg_host));
+
+  ucs_info("Message sent");
+  return UCS_OK;
+}
+
 ucs_status_t Messaging::on_server_ready() {
-  const int msg_len = 32;
-  char *msg_device = nullptr, msg_host[msg_len] = "";
-  CHECK_CUDA(cudaMallocManaged((void **)&msg_device, sizeof(char) * msg_len));
+  const size_t msg_len = 8LL << 10;
+  char *msg_device = nullptr;
+  CHECK_CUDA(cudaMalloc((void **)&msg_device, sizeof(char) * msg_len));
   auto request =
       ucp_tag_recv_nbx(worker, msg_device, msg_len, 0, 0, &request_parameters);
 
   if (auto status = wait_on_request(request); status != UCS_OK) {
     ucs_error("Receiving message failed");
+    CHECK_CUDA(cudaFree(msg_device));
     return status;
   }
 
+  char *msg_host = (char *)std::malloc(sizeof(char) * msg_len);
   CHECK_CUDA(cudaMemcpy((void *)msg_host, (void *)msg_device,
                         sizeof(char) * msg_len, cudaMemcpyDeviceToHost));
   CHECK_CUDA(cudaFree(msg_device));
   ucs_info("Received %s", msg_host);
+  std::free(msg_host);
   return UCS_OK;
 }
