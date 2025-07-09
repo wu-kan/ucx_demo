@@ -1,6 +1,5 @@
 #!/bin/sh
 
-. $SCC_SETUP_ENV
 spack load cmake ucx+cuda
 spack find --loaded
 
